@@ -13,6 +13,7 @@ def run_scan(directory):
     return result.stdout
 
 def main():
+    workspace = os.environ.get("GITHUB_WORKSPACE", "/github/workspace")
     threshold = os.environ.get("INPUT_SEVERITY_THRESHOLD", "high").lower()
     directory = os.environ.get("INPUT_DIRECTORY", ".")
 
@@ -32,7 +33,9 @@ def main():
     vulns_to_report = []
     
     for result in data.get("results", []):
-        file_path = result.get("source", {}).get("path", "unknown")
+        raw_path = result.get("source", {}).get("path", "unknown")
+        file_path = raw_path.replace(workspace, "").lstrip("/")
+        
         for package in result.get("packages", []):
             pkg_name = package.get("package", {}).get("name")
             pkg_version = package.get("package", {}).get("version")
@@ -50,10 +53,13 @@ def main():
 
     count = len(vulns_to_report)
     
-    print(f"\n| {'ID':<15} | {'Package':<30} | {'Severity':<10} |")
-    print("-" * 60)
+    print(f"\n| {'ID':<20} | {'Package':<40} | {'Severity':<10} |")
+    print("-" * 75)
     for v in vulns_to_report:
-        print(f"::error file={v['file']},line=1,title={v['id']}::Severidade {v['severity'].upper()} detectada no pacote {v['package']}. Verifique as atualizações disponíveis.")
+        print(f"| {v['id']:<20} | {v['package']:<40} | {v['severity']:<10} |")
+
+    for v in vulns_to_report:
+        print(f"::error file={v['file']},line=1,title={v['id']}::Pacote {v['package']} possui vulnerabilidade {v['severity'].upper()}.")
 
     if summary_file:
         with open(summary_file, "a") as f:
@@ -62,7 +68,7 @@ def main():
             f.write("| ID | Package | Severity | File |\n")
             f.write("| --- | --- | --- | --- |\n")
             for v in vulns_to_report:
-                f.write(f"| {v['id']} | `{v['package']}` | **{v['severity'].upper()}** | {v['file']} |\n")
+                f.write(f"| {v['id']} | `{v['package']}` | **{v['severity'].upper()}** | `{v['file']}` |\n")
 
     max_found_val = 0
     if vulns_to_report:
