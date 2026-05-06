@@ -1,0 +1,18 @@
+name: 'Spring Secure Gate'
+description: 'SCA scanner for Java/Spring that fails the build based on vulnerability severity.'
+author: 'Guilherme Lourenço'
+inputs:
+  severity_threshold:
+    description: 'Minimum severity to fail the build (low, medium, high, critical)'
+    required: false
+    default: 'high'
+  directory:
+    description: 'Directory to scan'
+    required: false
+    default: '.'
+branding:
+  icon: 'shield'
+  color: 'green'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
