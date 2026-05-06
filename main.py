@@ -53,7 +53,7 @@ def main():
     print(f"\n| {'ID':<15} | {'Package':<30} | {'Severity':<10} |")
     print("-" * 60)
     for v in vulns_to_report:
-        print(f"| {v['id']:<15} | {v['package']:<30} | {v['severity']:<10} |")
+        print(f"::error file={v['file']},line=1,title={v['id']}::Severidade {v['severity'].upper()} detectada no pacote {v['package']}. Verifique as atualizações disponíveis.")
 
     if summary_file:
         with open(summary_file, "a") as f:
